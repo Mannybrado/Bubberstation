@@ -58,6 +58,13 @@
 	to_chat(chap, "<span class='bold notice'>\"[quote]\"</span>")
 	to_chat(chap, "<span class='notice'>[desc]</span>")
 
+/// Activates if religious sect is reset by admins, should clean up anything you added on conversion.
+/datum/religion_sect/proc/on_deconversion(mob/living/chap)
+	SHOULD_CALL_PARENT(TRUE)
+	to_chat(chap, span_boldnotice("You have lost the approval of \the [name]."))
+	if(chap.mind.holy_role == HOLY_ROLE_HIGHPRIEST)
+		to_chat(chap, span_notice("Return to an altar to reform your sect."))
+
 /// Returns TRUE if the item can be sacrificed. Can be modified to fit item being tested as well as person offering. Returning TRUE will stop the attackby sequence and proceed to on_sacrifice.
 /datum/religion_sect/proc/can_sacrifice(obj/item/I, mob/living/chap)
 	. = TRUE
@@ -98,7 +105,7 @@
 		return FALSE
 	var/mob/living/carbon/human/blessed = target
 	for(var/obj/item/bodypart/bodypart as anything in blessed.bodyparts)
-		if(!IS_ORGANIC_LIMB(bodypart))
+		if(IS_ROBOTIC_LIMB(bodypart))
 			to_chat(chap, span_warning("[GLOB.deity] refuses to heal this metallic taint!"))
 			return TRUE
 
@@ -163,7 +170,7 @@
 
 	//if we're not targetting a robot part we stop early
 	var/obj/item/bodypart/bodypart = blessed.get_bodypart(chap.zone_selected)
-	if(!IS_ORGANIC_LIMB(bodypart))
+	if(IS_ORGANIC_LIMB(bodypart))
 		if(!did_we_charge)
 			to_chat(chap, span_warning("[GLOB.deity] scoffs at the idea of healing such fleshy matter!"))
 		else
@@ -177,8 +184,8 @@
 	if(bodypart.heal_damage(5,5,BODYTYPE_ROBOTIC))
 		blessed.update_damage_overlays()
 
-	blessed.visible_message(span_notice("[chap] [did_we_charge ? "repairs" : "repairs and charges"] [blessed] with the power of [GLOB.deity]!"))
-	to_chat(blessed, span_boldnotice("The inner machinations of [GLOB.deity] [did_we_charge ? "repairs" : "repairs and charges"] you!"))
+	blessed.visible_message(span_notice("[chap] [did_we_charge ? "repairs and charges" : "repairs"] [blessed] with the power of [GLOB.deity]!"))
+	to_chat(blessed, span_boldnotice("The inner machinations of [GLOB.deity] [did_we_charge ? "repairs and charges" : "repairs"] you!"))
 	playsound(chap, 'sound/effects/bang.ogg', 25, TRUE, -1)
 	blessed.add_mood_event("blessing", /datum/mood_event/blessing)
 	return TRUE
@@ -216,9 +223,6 @@
 		),
 	))
 
-//candle sect bibles don't heal or do anything special apart from the standard holy water blessings
-/datum/religion_sect/pyre/sect_bless(mob/living/target, mob/living/chap)
-	return TRUE
 
 /datum/religion_sect/pyre/on_sacrifice(obj/item/flashlight/flare/candle/offering, mob/living/user)
 	if(!istype(offering))
@@ -227,7 +231,7 @@
 		to_chat(user, span_notice("The candle needs to be lit to be offered!"))
 		return
 	to_chat(user, span_notice("[GLOB.deity] is pleased with your sacrifice."))
-	adjust_favor(20, user) //it's not a lot but hey there's a pacifist favor option at least
+	adjust_favor(50, user) //it's not a lot but hey there's a pacifist favor option at least
 	qdel(offering)
 	return TRUE
 
@@ -258,7 +262,7 @@
 		return FALSE
 	var/mob/living/carbon/human/blessed = blessed_living
 	for(var/obj/item/bodypart/robolimb as anything in blessed.bodyparts)
-		if(!IS_ORGANIC_LIMB(robolimb))
+		if(IS_ROBOTIC_LIMB(robolimb))
 			to_chat(chap, span_warning("[GLOB.deity] refuses to heal this metallic taint!"))
 			return TRUE
 
@@ -294,6 +298,11 @@
 		to_chat(new_convert, span_warning("[GLOB.deity] needs higher level creatures to fully comprehend the suffering. You are not burdened."))
 		return
 	new_convert.gain_trauma(/datum/brain_trauma/special/burdened, TRAUMA_RESILIENCE_MAGIC)
+
+/datum/religion_sect/burden/on_deconversion(mob/living/carbon/human/new_convert)
+	if (ishuman(new_convert))
+		new_convert.cure_trauma_type(/datum/brain_trauma/special/burdened, TRAUMA_RESILIENCE_MAGIC)
+	return ..()
 
 /datum/religion_sect/burden/tool_examine(mob/living/carbon/human/burdened) //display burden level
 	if(!ishuman(burdened))
@@ -335,6 +344,11 @@
 		to_chat(new_convert, span_warning("[GLOB.deity] has no respect for lower creatures, and refuses to make you honorbound."))
 		return FALSE
 	new_convert.gain_trauma(/datum/brain_trauma/special/honorbound, TRAUMA_RESILIENCE_MAGIC)
+
+/datum/religion_sect/honorbound/on_deconversion(mob/living/carbon/human/new_convert)
+	if (ishuman(new_convert))
+		new_convert.cure_trauma_type(/datum/brain_trauma/special/honorbound, TRAUMA_RESILIENCE_MAGIC)
+	return ..()
 
 #define MINIMUM_YUCK_REQUIRED 5
 

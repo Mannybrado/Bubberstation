@@ -21,6 +21,8 @@ GLOBAL_LIST_INIT(exp_specialmap, list(
 		ROLE_SPACE_BAR_PATRON,
 		ROLE_LAVALAND_SYNDICATE,
 		ROLE_MAINTENANCE_DRONE,
+		ROLE_DERELICT_DRONE,
+		ROLE_SYNDICATE_DRONE,
 		ROLE_VENUSHUMANTRAP,
 		ROLE_GHOST_ROLE,
 		//Skyrat Edit Start - Custom Ghost roles
@@ -30,6 +32,8 @@ GLOBAL_LIST_INIT(exp_specialmap, list(
 		ROLE_GHOST_CAFE,
 		ROLE_PORT_TARKON,
 		//Skyrat Edit Start - End Custom Ghost roles
+
+		ROLE_DAUNTLESS //BUBBERSATION EDIT
 		), // Ghost roles
 	EXP_TYPE_GHOST = list() // dead people, observers
 ))

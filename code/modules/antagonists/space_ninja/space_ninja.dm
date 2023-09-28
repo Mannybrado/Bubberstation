@@ -9,10 +9,11 @@
 	antag_moodlet = /datum/mood_event/focused
 	suicide_cry = "FOR THE SPIDER CLAN!!"
 	preview_outfit = /datum/outfit/ninja_preview
+	can_assign_self_objectives = TRUE
+	ui_name = "AntagInfoNinja"
+	default_custom_objective = "Destroy vital station infrastructure, without being seen."
 	///Whether or not this ninja will obtain objectives
 	var/give_objectives = TRUE
-	///Whether or not this ninja receives the standard equipment
-	var/give_equipment = TRUE
 
 /**
  * Proc that equips the space ninja outfit on a given individual.  By default this is the owner of the antagonist datum.
@@ -35,7 +36,7 @@
 	antag_memory += "Surprise is my weapon. Shadows are my armor. Without them, I am nothing.<br>"
 
 /datum/objective/cyborg_hijack
-	explanation_text = "Use your gloves to convert at least one cyborg to aide you in sabotaging the station."
+	explanation_text = "Use your gloves to convert at least one cyborg to aid you in sabotaging the station."
 
 /datum/objective/door_jack
 	///How many doors that need to be opened using the gloves to pass the objective
@@ -108,15 +109,23 @@
 	to_chat(owner.current, span_notice("The station is located to your [dir2text(get_dir(owner.current, locate(world.maxx/2, world.maxy/2, owner.current.z)))]. A thrown ninja star will be a great way to get there."))
 	owner.announce_objectives()
 
-/datum/antagonist/ninja/on_gain()
+/datum/antagonist/ninja/on_gain() // BUBBER EDIT BEGIN- WHOLE PROC EDITS
+	var/mob/living/carbon/human/operative = owner.current
 	if(give_objectives)
 		addObjectives()
 	addMemories()
-	if(give_equipment)
-		equip_space_ninja(owner.current)
+	operative.client?.prefs?.safe_transfer_prefs_to(operative)
+	operative.dna.update_dna_identity()
+	operative.dna.species.pre_equip_species_outfit(null, operative)
+	operative.regenerate_icons()
+	SSquirks.AssignQuirks(operative, operative.client, TRUE, TRUE, null, FALSE, operative)
 
+	equip_space_ninja(owner.current)
+	owner.current.add_quirk(/datum/quirk/freerunning)
+	owner.current.add_quirk(/datum/quirk/light_step)
 	owner.current.mind.set_assigned_role(SSjob.GetJobType(/datum/job/space_ninja))
 	owner.current.mind.special_role = ROLE_NINJA
+	operative.mind.active = TRUE // BUBBED EDIT END
 	return ..()
 
 /datum/antagonist/ninja/admin_add(datum/mind/new_owner,mob/admin)

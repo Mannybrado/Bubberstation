@@ -24,3 +24,21 @@
 	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
 	icon_state = "nobl_plush"
 	squeak_override = list('modular_zubbers/sound/misc/dog_toy.ogg' = 1)
+
+/obj/item/toy/plush/chirp_plush
+	name = "Chirping Synth Plushie"
+	desc = "It's warm to the touch."
+	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
+	icon_state = "chirp_plush"//Sprited by Kan3/kaylexi
+	attack_verb_continuous = list("chirps", "chimes")
+	attack_verb_simple = list("chirps")
+	squeak_override = list('sound/machines/beep.ogg' = 1)
+	gender = FEMALE
+
+/obj/item/toy/plush/bigdeer_plush
+	name = "Big deer plushie"
+	desc = "An incredibly round deer plush. It appears to have had too many berries for snack time."
+	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
+	icon_state = "bigdeer_plush" //sprited by Gavla
+	attack_verb_simple = list("puff", "smother")
+	squeak_override = list('modular_zubbers/sound/misc/squeakle.ogg' = 1)

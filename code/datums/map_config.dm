@@ -44,6 +44,9 @@
 	/// List of unit tests that are skipped when running this map
 	var/list/skipped_tests
 
+	/// Boolean that tells SSmapping to load all away missions in the codebase.
+	var/load_all_away_missions = FALSE
+
 /**
  * Proc that simply loads the default map config, which should always be functional.
  */
@@ -147,7 +150,10 @@
 		log_world("map_config shuttles is not a list!")
 		return
 
-	shuttles["emergency"] = "emergency_skyrat"
+	//BUBBERSTATION CHANGE: FIXES DUMB SKYRAT OVERRIDE. HOLY SHIT. THIS WASN'T EVEN MARKED AS MODULAR.
+	if(!json["emergency_override"])
+		shuttles["emergency"] = "emergency_skyrat"
+	//BUBBERSTATION CHANGE END
 
 	traits = json["traits"]
 	// "traits": [{"Linkage": "Cross"}, {"Space Ruins": true}]
@@ -184,6 +190,9 @@
 
 	if ("blacklist_file" in json)
 		blacklist_file = json["blacklist_file"]
+
+	if ("load_all_away_missions" in json)
+		load_all_away_missions = json["load_all_away_missions"]
 
 	allow_custom_shuttles = json["allow_custom_shuttles"] != FALSE
 

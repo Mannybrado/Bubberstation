@@ -90,6 +90,7 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/client/proc/list_fingerprints,
 	/client/proc/list_law_changes,
 	/client/proc/list_signalers,
+	/client/proc/manage_sect, /*manage chaplain religious sect*/
 	/client/proc/message_pda, /*send a message to somebody on PDA*/
 	/client/proc/respawn_character,
 	/client/proc/show_manifest,
@@ -153,6 +154,8 @@ GLOBAL_LIST_INIT(admin_verbs_fun, list(
 	/client/proc/spawn_sunbeam,					/*SKYRAT EDIT ADDITION*/
 	/client/proc/intensity_credits_panel,		/*SKYRAT EDIT ADDITION*/
 	/client/proc/toggle_bsa,					/*SKYRAT EDIT ADDITION*/
+	/client/proc/try_stop_delam, /*SKYRAT EDIT ADDITION*/
+	/client/proc/toggle_delam_suppression, /*SKYRAT EDIT ADDITION*/
 	))
 GLOBAL_PROTECT(admin_verbs_fun)
 GLOBAL_LIST_INIT(admin_verbs_spawn, list(/datum/admins/proc/spawn_atom, /datum/admins/proc/podspawn_atom, /datum/admins/proc/spawn_cargo, /datum/admins/proc/spawn_objasmob, /client/proc/respawn_character, /datum/admins/proc/beaker_panel))
@@ -257,13 +260,16 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/reload_interactions,	/*SKYRAT EDIT ADDITION*/
 	/client/proc/test_area_spawner,		/*AUTOMAPPER - SKYRAT EDIT ADDITION*/
 	/client/proc/toggle_liquid_debug,	/*SKYRAT EDIT ADDITION*/
+
+	/client/proc/debug_maintenance_loot //Bubberstation addition.
 	)
 GLOBAL_LIST_INIT(admin_verbs_possess, list(/proc/possess, GLOBAL_PROC_REF(release)))
 GLOBAL_PROTECT(admin_verbs_possess)
 /// SKYRAT EDIT BEGIN - Player Rank Manager - ORIGINAL: GLOBAL_LIST_INIT(admin_verbs_permissions, list(/client/proc/edit_admin_permissions))
 GLOBAL_LIST_INIT(admin_verbs_permissions, list(
 	/client/proc/edit_admin_permissions,
-	/client/proc/manage_player_ranks
+	/client/proc/manage_player_ranks,
+	/client/proc/migrate_player_ranks,
 	))
 /// SKYRAT EDIT END
 GLOBAL_PROTECT(admin_verbs_permissions)
@@ -830,6 +836,33 @@ GLOBAL_PROTECT(admin_verbs_poll)
 	if(holder)
 		src.holder.output_ai_laws()
 
+/client/proc/manage_sect()
+	set name = "Manage Religious Sect"
+	set category = "Admin.Game"
+
+	if (!isnull(GLOB.religious_sect))
+		var/you_sure = tgui_alert(
+			usr,
+			"The Chaplain has already chosen [GLOB.religious_sect.name], override their selection?",
+			"Replace God?",
+			list("Yes", "Cancel"),
+		)
+		if (you_sure != "Yes")
+			return
+
+	var/static/list/choices = list()
+	if (!length(choices))
+		choices["nothing"] = null
+		for(var/datum/religion_sect/sect as anything in subtypesof(/datum/religion_sect))
+			choices[initial(sect.name)] = sect
+	var/choice = tgui_input_list(usr, "Set new Chaplain sect", "God Picker", choices)
+	if(isnull(choice))
+		return
+	if(choice == "nothing")
+		reset_religious_sect()
+		return
+	set_new_religious_sect(choices[choice], reset_existing = TRUE)
+
 /client/proc/deadmin()
 	set name = "Deadmin"
 	set category = "Admin"
@@ -965,7 +998,7 @@ GLOBAL_PROTECT(admin_verbs_poll)
 		new_guy.mind.name = "[rank] Dummy"
 
 		// Assign the rank to the new player dummy.
-		if(!SSjob.AssignRole(new_guy, job))
+		if(!SSjob.AssignRole(new_guy, job, do_eligibility_checks = FALSE))
 			qdel(new_guy)
 			to_chat(admin, "[rank] wasn't able to be spawned.")
 			continue
@@ -1056,7 +1089,7 @@ GLOBAL_PROTECT(admin_verbs_poll)
 
 	if(!isobserver(usr))
 		admin_ghost()
-	usr.forceMove(coords2turf(reservation.bottom_left_coords))
+	usr.forceMove(reservation.bottom_left_turfs[1])
 
 	message_admins("[key_name_admin(usr)] has loaded lazy template '[choice]'")
 	to_chat(usr, span_boldnicegreen("Template loaded, you have been moved to the bottom left of the reservation."))

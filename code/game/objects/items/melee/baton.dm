@@ -26,7 +26,7 @@
 	/// The length of the knockdown applied to the user on clumsy_check()
 	var/clumsy_knockdown_time = 18 SECONDS
 	/// How much stamina damage we deal on a successful hit against a living, non-cyborg mob.
-	var/stamina_damage = 35 // SKYRAT EDIT - Less Stamina Damage (Original: 55)
+	var/stamina_damage = 55
 	/// Chance of causing force_say() when stunning a human mob
 	var/force_say_chance = 33
 	/// Can we stun cyborgs?
@@ -95,6 +95,15 @@
 		if(BATON_ATTACKING)
 			finalize_baton_attack(target, user, modifiers)
 
+/obj/item/melee/baton/apply_fantasy_bonuses(bonus)
+	. = ..()
+	stamina_damage = modify_fantasy_variable("stamina_damage", stamina_damage, bonus * 4)
+
+
+/obj/item/melee/baton/remove_fantasy_bonuses(bonus)
+	stamina_damage = reset_fantasy_variable("stamina_damage", stamina_damage)
+	return ..()
+
 /obj/item/melee/baton/add_item_context(datum/source, list/context, atom/target, mob/living/user)
 	if (isturf(target))
 		return NONE
@@ -127,7 +136,7 @@
 
 	if(!chunky_finger_usable && ishuman(user))
 		var/mob/living/carbon/human/potential_chunky_finger_human = user
-		if(potential_chunky_finger_human.check_chunky_fingers() && user.is_holding(src) && !HAS_TRAIT(user, TRAIT_CHUNKYFINGERS_IGNORE_BATON) && (user.mind && !HAS_TRAIT(user.mind, TRAIT_CHUNKYFINGERS_IGNORE_BATON)))
+		if(potential_chunky_finger_human.check_chunky_fingers() && user.is_holding(src) && !HAS_MIND_TRAIT(user, TRAIT_CHUNKYFINGERS_IGNORE_BATON))
 			balloon_alert(potential_chunky_finger_human, "fingers are too big!")
 			return BATON_ATTACK_DONE
 
@@ -382,7 +391,7 @@
 	force = 5
 	cooldown = 2.5 SECONDS
 	force_say_chance = 80 //very high force say chance because it's funny
-	stamina_damage = 115 // SKYRAT EDIT: Original 85
+	stamina_damage = 85
 	clumsy_knockdown_time = 24 SECONDS
 	affect_cyborg = TRUE
 	on_stun_sound = 'sound/effects/contractorbatonhit.ogg'
@@ -413,7 +422,7 @@
 	armor_type = /datum/armor/baton_security
 	throwforce = 7
 	force_say_chance = 50
-	stamina_damage = 35 // SKYRAT EDIT - 4 baton crit now (Original: 60)
+	stamina_damage = 60
 	knockdown_time = 5 SECONDS
 	clumsy_knockdown_time = 15 SECONDS
 	cooldown = 2.5 SECONDS
@@ -591,7 +600,7 @@
  */
 /obj/item/melee/baton/security/additional_effects_non_cyborg(mob/living/target, mob/living/user)
 	target.set_jitter_if_lower(40 SECONDS)
-	// target.set_confusion_if_lower(10 SECONDS) // SKYRAT EDIT REMOVAL
+	target.set_confusion_if_lower(10 SECONDS)
 	target.set_stutter_if_lower(16 SECONDS)
 
 	SEND_SIGNAL(target, COMSIG_LIVING_MINOR_SHOCK)
@@ -789,9 +798,10 @@
 	if(!.)
 		return
 	var/obj/item/stuff_in_hand = target.get_active_held_item()
-	if(stuff_in_hand && target.temporarilyRemoveItemFromInventory(stuff_in_hand))
-		if(user.put_in_inactive_hand(stuff_in_hand))
-			stuff_in_hand.loc.visible_message(span_warning("[stuff_in_hand] suddenly appears in [user]'s hand!"))
-		else
-			stuff_in_hand.forceMove(user.drop_location())
-			stuff_in_hand.loc.visible_message(span_warning("[stuff_in_hand] suddenly appears!"))
+	if(!user || !stuff_in_hand || !target.temporarilyRemoveItemFromInventory(stuff_in_hand))
+		return
+	if(user.put_in_inactive_hand(stuff_in_hand))
+		stuff_in_hand.loc.visible_message(span_warning("[stuff_in_hand] suddenly appears in [user]'s hand!"))
+	else
+		stuff_in_hand.forceMove(user.drop_location())
+		stuff_in_hand.loc.visible_message(span_warning("[stuff_in_hand] suddenly appears!"))

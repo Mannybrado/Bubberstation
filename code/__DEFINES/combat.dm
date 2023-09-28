@@ -99,10 +99,12 @@ DEFINE_BITFIELD(status_flags, list(
 
 //click cooldowns, in tenths of a second, used for various combat actions
 #define CLICK_CD_MELEE 8
-#define CLICK_CD_THROW 8
-#define CLICK_CD_RANGE 4
 #define CLICK_CD_RAPID 2
 #define CLICK_CD_HYPER_RAPID 1
+#define CLICK_CD_SLOW 10
+
+#define CLICK_CD_THROW 8
+#define CLICK_CD_RANGE 4
 #define CLICK_CD_CLICK_ABILITY 6
 #define CLICK_CD_BREAKOUT 100
 #define CLICK_CD_HANDCUFFED 10
@@ -335,6 +337,8 @@ GLOBAL_LIST_INIT(shove_disarming_types, typecacheof(list(
 #define ARMOR_WEAKENED_MULTIPLIER 2
 /// Armor can't block more than this as a percentage
 #define ARMOR_MAX_BLOCK 90
+/// Calculates the new armour value after armour penetration. Can return negative values, and those must be caught.
+#define PENETRATE_ARMOUR(armour, penetration) (penetration == 100 ? 0 : 100 * (armour - penetration) / (100 - penetration))
 
 /// Return values used in item/melee/baton/baton_attack.
 /// Does a normal item attack.

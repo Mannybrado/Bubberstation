@@ -58,9 +58,9 @@
 		if(is_banned_from(M.client.ckey, BAN_ANTAGONIST))
 			trimmed_list.Remove(M)
 			continue
-		if(!M.client?.prefs?.read_preference(/datum/preference/toggle/be_antag))
+/* 		if(!M.client?.prefs?.read_preference(/datum/preference/toggle/be_antag)) // BUBBER EDIT
 			trimmed_list.Remove(M)
-			continue
+			continue */
 		//SKYRAT EDIT END
 		if(M.client.get_remaining_days(minimum_required_age) > 0)
 			trimmed_list.Remove(M)
@@ -194,6 +194,7 @@
 		return
 
 	mode.picking_specific_rule(/datum/dynamic_ruleset/latejoin/infiltrator)
+	return
 
 ///subtype to handle checking players
 /datum/dynamic_ruleset/midround/from_living
@@ -493,7 +494,8 @@
 /datum/dynamic_ruleset/midround/from_ghosts/xenomorph/execute()
 	// 50% chance of being incremented by one
 	required_candidates += prob(50)
-	for(var/obj/machinery/atmospherics/components/unary/vent_pump/temp_vent in GLOB.machines)
+	var/list/vent_pumps = SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/atmospherics/components/unary/vent_pump)
+	for(var/obj/machinery/atmospherics/components/unary/vent_pump/temp_vent as anything in vent_pumps)
 		if(QDELETED(temp_vent))
 			continue
 		if(is_station_level(temp_vent.loc.z) && !temp_vent.welded)

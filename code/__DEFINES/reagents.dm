@@ -115,6 +115,8 @@
 #define REAGENT_NO_RANDOM_RECIPE (1<<7)
 ///Does this reagent clean things?
 #define REAGENT_CLEANS (1<<8)
+///Does this reagent affect wounds? Used to check if some procs should be ran.
+#define REAGENT_AFFECTS_WOUNDS (1<<9)
 
 //Chemical reaction flags, for determining reaction specialties
 ///Convert into impure/pure on reaction completion
@@ -146,11 +148,11 @@
 #define MAX_ADDICTION_POINTS 1000
 
 ///Addiction start/ends
-#define WITHDRAWAL_STAGE1_START_CYCLE 61
-#define WITHDRAWAL_STAGE1_END_CYCLE 120
-#define WITHDRAWAL_STAGE2_START_CYCLE 121
-#define WITHDRAWAL_STAGE2_END_CYCLE 180
-#define WITHDRAWAL_STAGE3_START_CYCLE 181
+#define WITHDRAWAL_STAGE1_START_CYCLE 121 // SKYRAT EDIT CHANGE - Original 61
+#define WITHDRAWAL_STAGE1_END_CYCLE 240 // SKYRAT EDIT CHANGE - Original 120
+#define WITHDRAWAL_STAGE2_START_CYCLE 241 // SKYRAT EDIT CHANGE - Original 121
+#define WITHDRAWAL_STAGE2_END_CYCLE 360 // SKYRAT EDIT CHANGE - Original 180
+#define WITHDRAWAL_STAGE3_START_CYCLE 361 // SKYRAT EDIT CHANGE - Original 181
 
 ///reagent tags - used to look up reagents for specific effects. Feel free to add to but comment it
 /// This reagent does brute effects (BOTH damaging and healing)
